@@ -1,0 +1,300 @@
+@font-face {
+    font-family: ButtonSymbol;
+    src: local("Segoe UI Symbol");
+    unicode-range: U+270F, U+2716;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    background: var(--bgcolor);
+    color: var(--color);
+}
+
+input {
+    width: 20rem;
+    font-size: 2rem;
+}
+
+input[type="checkbox"] {
+    width: 1rem;
+    margin: 0 1rem;
+}
+
+select {
+    font-size: 2rem;
+}
+
+.theme {
+    color: var(--color);
+    background: var(--bgcolor);
+}
+
+.theme-inverse {
+    background: var(--bgcolor-inverse);
+    color: var(--color-inverse);
+}
+
+.small {
+    font-size: 1rem;
+}
+
+.timeline-container {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 8rem 2rem 6rem 2rem;
+}
+
+.timeline {
+    max-width: 100%;
+}
+
+.activity-name {
+    display: inline-block;
+    padding: 0 0.25rem 0 0.5rem;
+    border: solid 1px var(--color);
+    border-left: solid 0.8rem var(--color);
+    font-size: 2rem;
+    background: var(--bgcolor);
+    min-width: 2em;
+    word-wrap: break-word;
+}
+
+.thin {
+    max-width: calc(100vw - 35rem);
+}
+
+.thick {
+    max-width: calc(100vw - 15rem);
+}
+
+.full-width {
+    width: calc(100% - 4.61036rem);
+}
+
+.timeline-row-time {
+    display: inline;
+    margin: 1rem;
+    font-size: 2rem;
+    vertical-align: bottom;
+    white-space: pre;
+}
+
+.label {
+    font-size: 2rem;
+    font-weight: bold;
+    color: var(--bgcolor);
+    margin-right: 1rem;
+}
+
+.corner-background-top-left {
+    float: left;
+    width: 1rem;
+    height: 1rem;
+    background-color: var(--bgcolor-inverse);
+    position: relative;
+    top: 0;
+    right: 0;
+}
+
+.corner-top-left {
+    width: 1rem;
+    height: 1rem;
+    background: var(--bgcolor);
+    border-radius: 1rem 0 0 0;
+}
+
+.corner-background-top-right {
+    float: right;
+    width: 1rem;
+    height: 1rem;
+    background-color: var(--bgcolor-inverse);
+    position: relative;
+    top: 0;
+    right: 0;
+}
+
+.corner-top-right {
+    width: 1rem;
+    height: 1rem;
+    background: var(--bgcolor);
+    border-radius: 0 1rem 0 0;
+}
+
+.corner-background-bottom-left {
+    float: left;
+    width: 1rem;
+    height: 1rem;
+    background-color: var(--bgcolor-inverse);
+    position: relative;
+    top: 0;
+    right: 0;
+}
+
+.corner-bottom-left {
+    width: 1rem;
+    height: 1rem;
+    background: var(--bgcolor);
+    border-radius: 0 0 0 1rem;
+}
+
+.corner-background-bottom-right {
+    float: right;
+    width: 1rem;
+    height: 1rem;
+    background-color: var(--bgcolor-inverse);
+    position: relative;
+    top: 0;
+    right: 0;
+}
+
+.corner-bottom-right {
+    width: 1rem;
+    height: 1rem;
+    background: var(--bgcolor);
+    border-radius: 0 0 1rem 0;
+}
+
+#header {
+    width: 100%;
+    min-height: 6.5rem;
+    position: fixed;
+    top: 0;
+}
+
+#activities button, #footer button {
+    margin: 0.35rem 0.5rem;
+}
+
+#activities {
+    display: block;
+    padding: 0.5rem;
+    max-height: 25vh;
+    overflow-y: auto;
+}
+
+#activity-items {
+    display: inline;
+}
+
+#activity-add {
+    display: inline;
+}
+
+#activity-menu {
+    display: inline;
+}
+
+#header-footer {
+    width: 100%;
+    height: 1rem;
+}
+
+#timeline {
+    margin-left: 1rem;
+}
+
+#timeline td {
+    padding-bottom: 0.5rem;
+}
+
+#footer-header {
+    width: 100%;
+    height: 1rem;
+}
+
+#footer {
+    width: 100%;
+    position: fixed;
+    bottom: 0;
+}
+
+#footer-body {
+    clear: both;
+    padding: 0.5rem;
+}
+
+#add-activity-dialog .dialog-body {
+    width: 40rem;
+    height: 6rem;
+}
+
+#remove-activities-dialog .dialog-body {
+    width: 80%;
+    height: 80%;
+}
+
+.remove-activities-dialog-row {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    margin: 0.25rem 0;
+}
+
+.to-remove-activity {
+    background-color: var(--disabled-bgcolor);
+}
+
+.button-apply-box {
+    display: block;
+    position: absolute;
+    left: 0;
+    bottom: 0.5rem;
+    width: 100%;
+    text-align: center;
+}
+
+#edit-timeline-dialog .dialog-body {
+    width: 44rem;
+    height: 15rem;
+}
+
+#edit-timeline-dialog .dialog-body div label {
+    display: block;
+    text-align: right;
+}
+
+#edit-timeline-dialog .dialog-body div input, #edit-timeline-dialog .dialog-body div select {
+    margin-bottom: 1rem;
+    margin: 1rem 0 0.1rem 0;
+}
+
+#edit-timeline-dialog .dialog-body>div:nth-child(2) {
+    float: left;
+    line-height: 4rem;
+}
+
+#edit-timeline-dialog .dialog-body>div:nth-child(3) {
+    float: left;
+}
+
+.edit-timeline-time {
+    font-size: 2rem;
+}
+
+.edit-timeline-time label {
+    font-size: 2rem;
+}
+
+#close-statistics-dialog {
+    float: right;
+}
+
+#statistics-dialog .dialog-body {
+    width: 80%;
+    height: 80%;
+}
+
+.content-area {
+    box-sizing: border-box;
+    padding: 1rem;
+    position: absolute;
+    left: 0;
+    width: 100%;
+    height: calc(100% - 9rem);
+    background: var(--bgcolor);
+    overflow: auto;
+}

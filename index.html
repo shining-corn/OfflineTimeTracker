@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>Offline Time Tracker</title>
+    <style>
+        :root {
+            --bgcolor: #e8e8e8;
+            --color: #00334e;
+            --bgcolor-inverse: #5588a3;
+            --color-inverse: #e8e8e8;
+
+            --button-border: #000000;
+            --hover-shadow-color: rgba(255, 255, 255, 0.5);
+            --active-shadow-color: rgba(0, 0, 0, 0.25);
+            --disabled-bgcolor: #808080;
+            --dialog-bgcolor: rgba(0, 0, 0, 0.5);
+        }
+    </style>
+    <link rel="stylesheet" href="timetracker.css">
+    <link rel="stylesheet" href="button.css">
+    <link rel="stylesheet" href="dialog.css">
+</head>
+
+<body>
+    <div>
+        <div id="timeline-container" class="timeline-container">
+            <table id="timeline" class="theme timeline"></table>
+        </div>
+
+        <div id="header">
+            <div id="activities" class="theme-inverse">
+                <p>Choose or add an activity to start time tracking.</p>
+                <div id="activity-items">
+                </div>
+                <div id="activity-add">
+                    <button type="button" id="add-activity" class="button-circle">+</button>
+                </div>
+                <div id="activity-menu">
+                    <button type="button" id="remove-activities" class="button-circle" disabled="disabled">
+                        &#x1F5D1;
+                    </button>
+                </div>
+            </div>
+            <div id="header-footer">
+                <div class="corner-background-top-left">
+                    <div class="corner-top-left"></div>
+                </div>
+                <div class="corner-background-top-right">
+                    <div class="corner-top-right"></div>
+                </div>
+            </div>
+        </div>
+
+        <div id="footer">
+            <div class="footer-header">
+                <div class="corner-background-bottom-left">
+                    <div class="corner-bottom-left"></div>
+                </div>
+                <div class="corner-background-bottom-right">
+                    <div class="corner-bottom-right"></div>
+                </div>
+            </div>
+            <div id="footer-body" class="theme-inverse">
+                <button type="button" class="button-activity" id="stop-time-tracker" disabled="disabled">Stop</button>
+                <button type="button" class="button-function" id="open-statistics-dialog"
+                    disabled="disabled">Statistics</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="add-activity-dialog" class="dialog" hidden>
+        <div class="dialog-body">
+            <button type="button" name="close" class="button-close-dialog">&#x2716;</button>
+            <label class="label">Activity Name</label>
+            <input id="add-activity-name">
+            <div class="button-apply-box">
+                <button type="button" id="add-and-start" class="button-function" disabled="disabled">
+                    Add and Start
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="remove-activities-dialog" class="dialog" hidden>
+        <div class="dialog-body">
+            <button type="button" name="close" class="button-close-dialog">&#x2716;</button>
+            <div class="content-area">
+                <div id="remove-activities-dialog-list"></div>
+            </div>
+            <div class="button-apply-box">
+                <button type="button" id="remove-activities-dialog-apply" class="button-function" disabled="disabled">Remove</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="edit-timeline-dialog" class="dialog" hidden>
+        <div class="dialog-body">
+            <button type="button" name="close" class="button-close-dialog">&#x2716;</button>
+            <div>
+                <label class="label">Activity Name</label>
+                <label class="label">Start</label>
+                <label class="label">End</label>
+            </div>
+            <div>
+                <input id="edit-timeline-dialog-activity-name">
+                <div class="edit-timeline-time">
+                    <select id="edit-timeline-dialog-start-hour">
+                        <option value="0">00</option>
+                        <option value="1">01</option>
+                        <option value="2">02</option>
+                        <option value="3">03</option>
+                        <option value="4">04</option>
+                        <option value="5">05</option>
+                        <option value="6">06</option>
+                        <option value="7">07</option>
+                        <option value="8">08</option>
+                        <option value="9">09</option>
+                        <option value="10">10</option>
+                        <option value="11">11</option>
+                        <option value="12">12</option>
+                        <option value="13">13</option>
+                        <option value="14">14</option>
+                        <option value="15">15</option>
+                        <option value="16">16</option>
+                        <option value="17">17</option>
+                        <option value="18">18</option>
+                        <option value="19">19</option>
+                        <option value="20">20</option>
+                        <option value="21">21</option>
+                        <option value="22">22</option>
+                        <option value="23">23</option>
+                    </select>
+                    :
+                    <select id="edit-timeline-dialog-start-minutes">
+                        <option value="0">00</option>
+                        <option value="1">01</option>
+                        <option value="2">02</option>
+                        <option value="3">03</option>
+                        <option value="4">04</option>
+                        <option value="5">05</option>
+                        <option value="6">06</option>
+                        <option value="7">07</option>
+                        <option value="8">08</option>
+                        <option value="9">09</option>
+                        <option value="10">10</option>
+                        <option value="11">11</option>
+                        <option value="12">12</option>
+                        <option value="13">13</option>
+                        <option value="14">14</option>
+                        <option value="15">15</option>
+                        <option value="16">16</option>
+                        <option value="17">17</option>
+                        <option value="18">18</option>
+                        <option value="19">19</option>
+                        <option value="20">20</option>
+                        <option value="21">21</option>
+                        <option value="22">22</option>
+                        <option value="23">23</option>
+                        <option value="24">24</option>
+                        <option value="25">25</option>
+                        <option value="26">26</option>
+                        <option value="27">27</option>
+                        <option value="28">28</option>
+                        <option value="29">29</option>
+                        <option value="30">30</option>
+                        <option value="31">31</option>
+                        <option value="32">32</option>
+                        <option value="33">33</option>
+                        <option value="34">34</option>
+                        <option value="35">35</option>
+                        <option value="36">36</option>
+                        <option value="37">37</option>
+                        <option value="38">38</option>
+                        <option value="39">39</option>
+                        <option value="40">30</option>
+                        <option value="41">41</option>
+                        <option value="42">42</option>
+                        <option value="43">43</option>
+                        <option value="44">44</option>
+                        <option value="45">45</option>
+                        <option value="46">46</option>
+                        <option value="47">47</option>
+                        <option value="48">48</option>
+                        <option value="49">49</option>
+                        <option value="50">50</option>
+                        <option value="51">51</option>
+                        <option value="52">52</option>
+                        <option value="53">53</option>
+                        <option value="54">54</option>
+                        <option value="55">55</option>
+                        <option value="56">56</option>
+                        <option value="57">57</option>
+                        <option value="58">58</option>
+                        <option value="59">59</option>
+                    </select>
+                    :
+                    <select id="edit-timeline-dialog-start-seconds">
+                        <option value="0">00</option>
+                        <option value="1">01</option>
+                        <option value="2">02</option>
+                        <option value="3">03</option>
+                        <option value="4">04</option>
+                        <option value="5">05</option>
+                        <option value="6">06</option>
+                        <option value="7">07</option>
+                        <option value="8">08</option>
+                        <option value="9">09</option>
+                        <option value="10">10</option>
+                        <option value="11">11</option>
+                        <option value="12">12</option>
+                        <option value="13">13</option>
+                        <option value="14">14</option>
+                        <option value="15">15</option>
+                        <option value="16">16</option>
+                        <option value="17">17</option>
+                        <option value="18">18</option>
+                        <option value="19">19</option>
+                        <option value="20">20</option>
+                        <option value="21">21</option>
+                        <option value="22">22</option>
+                        <option value="23">23</option>
+                        <option value="24">24</option>
+                        <option value="25">25</option>
+                        <option value="26">26</option>
+                        <option value="27">27</option>
+                        <option value="28">28</option>
+                        <option value="29">29</option>
+                        <option value="30">30</option>
+                        <option value="31">31</option>
+                        <option value="32">32</option>
+                        <option value="33">33</option>
+                        <option value="34">34</option>
+                        <option value="35">35</option>
+                        <option value="36">36</option>
+                        <option value="37">37</option>
+                        <option value="38">38</option>
+                        <option value="39">39</option>
+                        <option value="40">30</option>
+                        <option value="41">41</option>
+                        <option value="42">42</option>
+                        <option value="43">43</option>
+                        <option value="44">44</option>
+                        <option value="45">45</option>
+                        <option value="46">46</option>
+                        <option value="47">47</option>
+                        <option value="48">48</option>
+                        <option value="49">49</option>
+                        <option value="50">50</option>
+                        <option value="51">51</option>
+                        <option value="52">52</option>
+                        <option value="53">53</option>
+                        <option value="54">54</option>
+                        <option value="55">55</option>
+                        <option value="56">56</option>
+                        <option value="57">57</option>
+                        <option value="58">58</option>
+                        <option value="59">59</option>
+                    </select>
+                    <button type="button" id="edit-timeline-dialog-decrease-start"
+                        class="button-circle small">-</button>
+                    <button type="button" id="edit-timeline-dialog-increase-start"
+                        class="button-circle small">+</button>
+                </div>
+                <div class="edit-timeline-time">
+                    <select id="edit-timeline-dialog-end-hour">
+                        <option value="0">00</option>
+                        <option value="1">01</option>
+                        <option value="2">02</option>
+                        <option value="3">03</option>
+                        <option value="4">04</option>
+                        <option value="5">05</option>
+                        <option value="6">06</option>
+                        <option value="7">07</option>
+                        <option value="8">08</option>
+                        <option value="9">09</option>
+                        <option value="10">10</option>
+                        <option value="11">11</option>
+                        <option value="12">12</option>
+                        <option value="13">13</option>
+                        <option value="14">14</option>
+                        <option value="15">15</option>
+                        <option value="16">16</option>
+                        <option value="17">17</option>
+                        <option value="18">18</option>
+                        <option value="19">19</option>
+                        <option value="20">20</option>
+                        <option value="21">21</option>
+                        <option value="22">22</option>
+                        <option value="23">23</option>
+                    </select>
+                    :
+                    <select id="edit-timeline-dialog-end-minutes">
+                        <option value="0">00</option>
+                        <option value="1">01</option>
+                        <option value="2">02</option>
+                        <option value="3">03</option>
+                        <option value="4">04</option>
+                        <option value="5">05</option>
+                        <option value="6">06</option>
+                        <option value="7">07</option>
+                        <option value="8">08</option>
+                        <option value="9">09</option>
+                        <option value="10">10</option>
+                        <option value="11">11</option>
+                        <option value="12">12</option>
+                        <option value="13">13</option>
+                        <option value="14">14</option>
+                        <option value="15">15</option>
+                        <option value="16">16</option>
+                        <option value="17">17</option>
+                        <option value="18">18</option>
+                        <option value="19">19</option>
+                        <option value="20">20</option>
+                        <option value="21">21</option>
+                        <option value="22">22</option>
+                        <option value="23">23</option>
+                        <option value="24">24</option>
+                        <option value="25">25</option>
+                        <option value="26">26</option>
+                        <option value="27">27</option>
+                        <option value="28">28</option>
+                        <option value="29">29</option>
+                        <option value="30">30</option>
+                        <option value="31">31</option>
+                        <option value="32">32</option>
+                        <option value="33">33</option>
+                        <option value="34">34</option>
+                        <option value="35">35</option>
+                        <option value="36">36</option>
+                        <option value="37">37</option>
+                        <option value="38">38</option>
+                        <option value="39">39</option>
+                        <option value="40">30</option>
+                        <option value="41">41</option>
+                        <option value="42">42</option>
+                        <option value="43">43</option>
+                        <option value="44">44</option>
+                        <option value="45">45</option>
+                        <option value="46">46</option>
+                        <option value="47">47</option>
+                        <option value="48">48</option>
+                        <option value="49">49</option>
+                        <option value="50">50</option>
+                        <option value="51">51</option>
+                        <option value="52">52</option>
+                        <option value="53">53</option>
+                        <option value="54">54</option>
+                        <option value="55">55</option>
+                        <option value="56">56</option>
+                        <option value="57">57</option>
+                        <option value="58">58</option>
+                        <option value="59">59</option>
+                    </select>
+                    :
+                    <select id="edit-timeline-dialog-end-seconds">
+                        <option value="0">00</option>
+                        <option value="1">01</option>
+                        <option value="2">02</option>
+                        <option value="3">03</option>
+                        <option value="4">04</option>
+                        <option value="5">05</option>
+                        <option value="6">06</option>
+                        <option value="7">07</option>
+                        <option value="8">08</option>
+                        <option value="9">09</option>
+                        <option value="10">10</option>
+                        <option value="11">11</option>
+                        <option value="12">12</option>
+                        <option value="13">13</option>
+                        <option value="14">14</option>
+                        <option value="15">15</option>
+                        <option value="16">16</option>
+                        <option value="17">17</option>
+                        <option value="18">18</option>
+                        <option value="19">19</option>
+                        <option value="20">20</option>
+                        <option value="21">21</option>
+                        <option value="22">22</option>
+                        <option value="23">23</option>
+                        <option value="24">24</option>
+                        <option value="25">25</option>
+                        <option value="26">26</option>
+                        <option value="27">27</option>
+                        <option value="28">28</option>
+                        <option value="29">29</option>
+                        <option value="30">30</option>
+                        <option value="31">31</option>
+                        <option value="32">32</option>
+                        <option value="33">33</option>
+                        <option value="34">34</option>
+                        <option value="35">35</option>
+                        <option value="36">36</option>
+                        <option value="37">37</option>
+                        <option value="38">38</option>
+                        <option value="39">39</option>
+                        <option value="40">30</option>
+                        <option value="41">41</option>
+                        <option value="42">42</option>
+                        <option value="43">43</option>
+                        <option value="44">44</option>
+                        <option value="45">45</option>
+                        <option value="46">46</option>
+                        <option value="47">47</option>
+                        <option value="48">48</option>
+                        <option value="49">49</option>
+                        <option value="50">50</option>
+                        <option value="51">51</option>
+                        <option value="52">52</option>
+                        <option value="53">53</option>
+                        <option value="54">54</option>
+                        <option value="55">55</option>
+                        <option value="56">56</option>
+                        <option value="57">57</option>
+                        <option value="58">58</option>
+                        <option value="59">59</option>
+                    </select>
+                    <button type="button" id="edit-timeline-dialog-decrease-end" class="button-circle small">-</button>
+                    <button type="button" id="edit-timeline-dialog-increase-end" class="button-circle small">+</button>
+                </div>
+            </div>
+            <div class="button-apply-box">
+                <button type="button" id="apply-edit-timeline-dialog" class="button-function">Apply</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="statistics-dialog" class="dialog" hidden>
+        <div class="dialog-body">
+            <button type="button" name="close" class="button-close-dialog">&#x2716;</button>
+            <div class="content-area">
+                <table id="statistics-output"></table>
+            </div>
+            <div class="button-apply-box">
+                <button type="button" name="close" class="button-function">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="timetracker.js"></script>
+
+</body>
+
+</html>

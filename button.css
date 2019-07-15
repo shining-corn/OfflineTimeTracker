@@ -1,0 +1,74 @@
+button {
+    display: inline-block;
+    padding: 0.25rem 0.5rem;
+    margin: 0 1rem;
+    border: none;
+    border-bottom: solid 0.1em var(--button-border);
+    text-decoration: none;
+    text-align: center;
+    font-family: ButtonSymbol;
+    font-weight: bold;
+    font-size: 1.75rem;
+    color: var(--color);
+}
+
+button:hover, button:focus {
+    box-shadow: 0 0 0.4rem 0.4rem var(--hover-shadow-color);
+}
+
+button:active:not([disabled]) {
+    box-shadow: 0 0 0.4rem 0.4rem var(--active-shadow-color);
+    transform: translateY(0.2rem);
+}
+
+button:disabled {
+    display: inline-block;
+    overflow: hidden;
+    background: var(--disabled-bgcolor);
+    border-bottom: none;
+    margin-bottom: 0.2rem;
+    color: var(--color);
+    text-decoration: none;
+    text-align: center;
+    font-weight: bold;
+    box-shadow: none;
+}
+
+.button-function {
+    border-radius: 2rem 2rem 2rem 2rem;
+}
+
+.button-circle {
+    padding: 0;
+    width: 2em;
+    height: 2em;
+    border-radius: 50%;
+}
+
+.button-activity {
+    border-left: solid 0.8rem var(--color);
+    min-width: 3em;
+    max-width: 16em;
+    overflow: hidden;
+    white-space: nowrap;
+}
+
+.button-edit {
+    color: var(--color);
+    transform: rotate(135deg);
+}
+
+.button-close-dialog {
+    display: block;
+    position: absolute;
+    top: 0;
+    right: 0;
+    background: none;
+    box-shadow: none;
+    border: none;
+    margin: 0.5rem;
+}
+
+.button-close-dialog:hover, .button-close-dialog:focus, .button-close-dialog:active:not([disabled]) {
+    box-shadow: none;
+}
