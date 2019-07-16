@@ -538,9 +538,11 @@ class OpenRemoveActivitiesDialogButton {
         this.observable.on(APP_EVENT.NO_ACTIVITIES, () => {
             this.tag.setAttribute(HTML_ATTRIBUTE.DISABLED, HTML_ATTRIBUTE_VALUE.DISABLED);
         });
-
-        this.observable.on(APP_EVENT.ENABLE_REMOVE_ACTIVITY_BUTTON, () => {
-            this.tag.removeAttribute(HTML_ATTRIBUTE.DISABLED);
+        
+        this.observable.trigger(APP_EVENT.GET_ACTIVITIES, (activities) => {
+            if (Object.keys(activities).length) {
+                this.tag.removeAttribute(HTML_ATTRIBUTE.DISABLED);
+            }
         });
     }
 }

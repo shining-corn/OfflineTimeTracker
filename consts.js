@@ -134,7 +134,6 @@ export const APP_EVENT = enumeration({
     STOP_TIME_TRACKER: Symbol(),
     OPEN_EDIT_TIMELINE_DIALOG: Symbol(),
     ENABLE_STATISTICS_BUTTON: Symbol(),
-    ENABLE_REMOVE_ACTIVITY_BUTTON: Symbol(),
 });
 
 export default {};
