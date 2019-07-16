@@ -99,7 +99,7 @@ export const CLASS_NAME = enumeration({
     BUTTON_FUNCTION: 'button-function',
     ACTIVITY_NAME: 'activity-name',
     TIMELINE_ROW_TIME: 'timeline-row-time',
-    REMOVE_ACTIVITIES_DIALOG_ROW: 'REMOVE-activities-dialog-row',
+    REMOVE_ACTIVITIES_DIALOG_ROW: 'remove-activities-dialog-row',
     TO_REMOVE_ACTIVITY: 'to-remove-activity',
 });
 
@@ -115,7 +115,6 @@ export const ATTRIBUTE = enumeration({
 });
 
 export const NAME = enumeration({
-    ACTIVITY_BUTTON: 'activity_button',
     CLOSE: 'close',
 });
 
@@ -134,6 +133,7 @@ export const APP_EVENT = enumeration({
     STOP_TIME_TRACKER: Symbol(),
     OPEN_EDIT_TIMELINE_DIALOG: Symbol(),
     ENABLE_STATISTICS_BUTTON: Symbol(),
+    ENABLE_REMOVE_ACTIVITY_BUTTON: Symbol(),
 });
 
 export default {};

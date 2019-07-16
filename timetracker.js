@@ -31,7 +31,7 @@ class Activity {
 class ActivityContainer {
     constructor(observable) {
         this.observable = observable;
-        this.activities = {};
+        this.activities = this._restoreActivities();
         this.observable.on(APP_EVENT.ADD_ACTIVITY, (activity) => {
             this._enableAllActivityButton();
 
@@ -42,23 +42,10 @@ class ActivityContainer {
             else {
                 this.activities[activity.id] = activity;
 
-                let tag = document.createElement(HTML_TAG_NAME.BUTTON);
-                tag.className = CLASS_NAME.BUTTON_ACTIVITY;
-                tag.id = activity.id;
-                tag.setAttribute(HTML_ATTRIBUTE.DISABLED, HTML_ATTRIBUTE.DISABLED);
-                tag.setAttribute(HTML_ATTRIBUTE.TITLE, activity.name);
-                tag.setAttribute(HTML_ATTRIBUTE.NAME, NAME.ACTIVITY_BUTTON);
-                tag.addEventListener(HTML_EVENT.ON_CLICK, (event) => {
-                    event.preventDefault();
-
-                    this._enableAllActivityButton();
-                    tag.setAttribute(HTML_ATTRIBUTE.DISABLED, HTML_ATTRIBUTE.DISABLED);
-                    this.observable.trigger(APP_EVENT.START_TIME_TRACKER, activity);
-                });
-                tag.innerText = activity.name;
-
-                document.getElementById(TAG_ID.ACTIVITY_ITEMS).insertBefore(tag, null);
+                this._addActivityButton(activity);
             }
+
+            this._saveActivities();
         });
 
         this.observable.on(APP_EVENT.STOP_TIME_TRACKER, (activity) => {
@@ -79,14 +66,56 @@ class ActivityContainer {
             if (Object.keys(this.activities).length == 0) {
                 this.observable.trigger(APP_EVENT.NO_ACTIVITIES);
             }
+
+            this._saveActivities();
         });
     }
 
     _enableAllActivityButton() {
-        let tags = document.getElementsByName(NAME.ACTIVITY_BUTTON);
+        let tags = document.getElementById(TAG_ID.ACTIVITY_ITEMS).getElementsByTagName(HTML_TAG_NAME.BUTTON);
         for (let tag of tags) {
             tag.removeAttribute(HTML_ATTRIBUTE.DISABLED);
         }
+    }
+
+    _addActivityButton(activity) {
+        let tag = document.createElement(HTML_TAG_NAME.BUTTON);
+        tag.className = CLASS_NAME.BUTTON_ACTIVITY;
+        tag.id = activity.id;
+        tag.setAttribute(HTML_ATTRIBUTE.DISABLED, HTML_ATTRIBUTE.DISABLED);
+        tag.setAttribute(HTML_ATTRIBUTE.TITLE, activity.name);
+        tag.addEventListener(HTML_EVENT.ON_CLICK, (event) => {
+            event.preventDefault();
+
+            this._enableAllActivityButton();
+            tag.setAttribute(HTML_ATTRIBUTE.DISABLED, HTML_ATTRIBUTE.DISABLED);
+            this.observable.trigger(APP_EVENT.START_TIME_TRACKER, activity);
+        });
+        tag.innerText = activity.name;
+
+        document.getElementById(TAG_ID.ACTIVITY_ITEMS).insertBefore(tag, null);
+    }
+
+    _restoreActivities() {
+        const strActivities = localStorage.activities;
+        if (strActivities) {
+            const activities = JSON.parse(strActivities);
+            if (activities) {
+                for (const key in activities) {
+                    this._addActivityButton(activities[key]);
+                }
+                this._enableAllActivityButton();
+
+                return activities;
+            }
+        }
+
+        return {};
+    }
+
+    _saveActivities() {
+        const strActivities = JSON.stringify(this.activities);
+        localStorage.activities = strActivities;
     }
 }
 
@@ -493,7 +522,7 @@ class AddActivityDialog {
     }
 }
 
-class OpenEditActivitiesDialogButton {
+class OpenRemoveActivitiesDialogButton {
     constructor(observable) {
         this.observable = observable;
         this.tag = document.getElementById(TAG_ID.REMOVE_ACTIVITIES);
@@ -509,10 +538,14 @@ class OpenEditActivitiesDialogButton {
         this.observable.on(APP_EVENT.NO_ACTIVITIES, () => {
             this.tag.setAttribute(HTML_ATTRIBUTE.DISABLED, HTML_ATTRIBUTE_VALUE.DISABLED);
         });
+
+        this.observable.on(APP_EVENT.ENABLE_REMOVE_ACTIVITY_BUTTON, () => {
+            this.tag.removeAttribute(HTML_ATTRIBUTE.DISABLED);
+        });
     }
 }
 
-class EditActivitiesDialog {
+class RemoveActivitiesDialog {
     constructor(observable) {
         this.observable = observable;
         this.tag = document.getElementById(TAG_ID.REMOVE_ACTIVITIES_DIALOG);
@@ -565,7 +598,7 @@ class EditActivitiesDialog {
                 label.classList.add(CLASS_NAME.REMOVE_ACTIVITIES_DIALOG_ROW);
                 label.setAttribute(HTML_ATTRIBUTE.FOR, id);
                 label.setAttribute(ATTRIBUTE.ACTIVITY_ID, `${activities[key].id}`);
-                
+
                 const checkbox = document.createElement(HTML_TAG_NAME.INPUT);
                 checkbox.id = id;
                 checkbox.type = HTML_ATTRIBUTE_VALUE.CHECKBOX;
@@ -691,8 +724,8 @@ class StatisticsDialog {
     const timeTracker = new TimeTracker(observable);
     const addActivityButton = new AddActivityButton(observable);
     const addActivityDialog = new AddActivityDialog(observable);
-    const openEditActivitiesDialogButton = new OpenEditActivitiesDialogButton(observable);
-    const editActivityDialog = new EditActivitiesDialog(observable);
+    const openRemoveActivitiesDialogButton = new OpenRemoveActivitiesDialogButton(observable);
+    const removeActivityDialog = new RemoveActivitiesDialog(observable);
     const editTimelineDialog = new EditTimelineDialog(observable);
     const stopTimeTrackerButton = new StopTimeTrackerButton(observable);
     const openStatisticsButton = new OpenStatisticsButton(observable);
