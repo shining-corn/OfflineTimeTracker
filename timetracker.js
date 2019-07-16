@@ -730,4 +730,9 @@ class StatisticsDialog {
     const stopTimeTrackerButton = new StopTimeTrackerButton(observable);
     const openStatisticsButton = new OpenStatisticsButton(observable);
     const statisticsDialog = new StatisticsDialog(observable);
+    
+    window.addEventListener(HTML_EVENT.ON_BEFORE_UNLOAD, (e) => {
+        e.preventDefault();
+        e.returnValue = '-';
+    });
 })();

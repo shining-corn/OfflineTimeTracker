@@ -26,6 +26,7 @@ export const HTML_EVENT = enumeration({
     ON_KEYUP: 'keyup',
     ON_KEYDOWN: 'keydown',
     ON_RESIZE: 'onresize',
+    ON_BEFORE_UNLOAD: 'beforeunload',
 });
 
 export const HTML_TAG_NAME = enumeration({
