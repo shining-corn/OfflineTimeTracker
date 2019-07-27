@@ -125,6 +125,8 @@ class TimeTracker {
         this.tagLatestLine = undefined;
         this.tagTimeline = document.getElementById(TAG_ID.TIMELINE);
 
+        this.setPaddingToTimeline();
+
         this.observable.on(APP_EVENT.START_TIME_TRACKER, (activity) => {
             if (typeof this.tagLatestLine !== TYPE.UNDEFINED) {
                 if (this.tagLatestLine.getAttribute(ATTRIBUTE.NAME) !== activity.name) {
@@ -175,6 +177,7 @@ class TimeTracker {
 
         this.observable.on(HTML_EVENT.ON_RESIZE, () => this.setPaddingToTimeline());
         this.observable.on(APP_EVENT.ADD_ACTIVITY, () => this.setPaddingToTimeline());
+        this.observable.on(APP_EVENT.REMOVE_ACTIVITY, () => this.setPaddingToTimeline());
     }
 
     setPaddingToTimeline() {
