@@ -82,6 +82,7 @@ export const TAG_ID = enumeration({
     APPLY_EDIT_TIMELINE_DIALOG: 'apply-edit-timeline-dialog',
     STATISTICS_DIALOG: 'statistics-dialog',
     STATISTICS_OUTPUT: 'statistics-output',
+    CLEAR: 'clear',
 });
 
 export const CLASS_NAME = enumeration({
@@ -109,10 +110,11 @@ export const TEXT = enumeration({
 });
 
 export const ATTRIBUTE = enumeration({
-    NAME: 'data-name',
+    ACTIVITY_ID: 'data-activity-id',
+    ACTIVITY_NAME: 'data-activity-name',
     START: 'data-start',
     END: 'data-end',
-    ACTIVITY_ID: 'data-activity-id',
+    INDEX: 'data-index',
 });
 
 export const NAME = enumeration({
@@ -134,6 +136,10 @@ export const APP_EVENT = enumeration({
     STOP_TIME_TRACKER: Symbol(),
     OPEN_EDIT_TIMELINE_DIALOG: Symbol(),
     ENABLE_STATISTICS_BUTTON: Symbol(),
+    DISABLE_STATISTICS_BUTTON: Symbol(),
+    CLEAR_TIMELINE: Symbol(),
+    DISABLE_ACTIVITY_BUTTON: Symbol(),
+    ENABLE_STOP_TIME_TRACKER_BUTTON: Symbol(),
 });
 
 export default {};

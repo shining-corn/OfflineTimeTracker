@@ -24,7 +24,7 @@ function formatHHMMSS(date) {
 class Activity {
     constructor(name) {
         this.name = name;
-        this.id = 'x-' + name;
+        this.id = 'activity-' + name;
     }
 }
 
@@ -94,10 +94,16 @@ class ActivityContainer {
         tag.innerText = activity.name;
 
         document.getElementById(TAG_ID.ACTIVITY_ITEMS).insertBefore(tag, null);
+
+        this.observable.on(APP_EVENT.DISABLE_ACTIVITY_BUTTON, (targetActivity) => {
+            if (activity.id === targetActivity.id) {
+                tag.setAttribute(HTML_ATTRIBUTE.DISABLED, HTML_ATTRIBUTE.DISABLED);
+            }
+        })
     }
 
     _restoreActivities() {
-        const strActivities = localStorage.activities;
+        const strActivities = localStorage.getItem('activities');
         if (strActivities) {
             const activities = JSON.parse(strActivities);
             if (activities) {
@@ -115,13 +121,56 @@ class ActivityContainer {
 
     _saveActivities() {
         const strActivities = JSON.stringify(this.activities);
-        localStorage.activities = strActivities;
+        localStorage.setItem('activities', strActivities);
+    }
+}
+
+class TimelineEntry {
+    constructor(index, activity, start, end) {
+        this.index = index;
+        this.activity = activity;
+        this.start = start;
+        this.end = end;
+    }
+}
+
+class TimelineStrage {
+    addEntry(entry) {
+        const strTimeline = localStorage.getItem('timeline');
+        const timeline = strTimeline ? JSON.parse(strTimeline) : [];
+        timeline.push(entry);
+        localStorage.setItem('timeline', JSON.stringify(timeline));
+    }
+
+    getEntries() {
+        const strTimeline = localStorage.getItem('timeline');
+        const timeline = strTimeline ? JSON.parse(strTimeline) : [];
+        for (const i in timeline) {
+            timeline[i].start = new Date(timeline[i].start);
+            if (timeline[i].end) {
+                timeline[i].end = new Date(timeline[i].end);
+            }
+        }
+
+        return timeline;
+    }
+
+    updateTimelineEntry(index, entry) {
+        const strTimeline = localStorage.getItem('timeline');
+        const timeline = strTimeline ? JSON.parse(strTimeline) : [];
+        timeline[index] = entry;
+        localStorage.setItem('timeline', JSON.stringify(timeline));
+    }
+
+    clear() {
+        localStorage.removeItem('timeline');
     }
 }
 
 class TimeTracker {
     constructor(observable) {
         this.observable = observable;
+        this.timelineStrage = new TimelineStrage();
         this.tagLatestLine = undefined;
         this.tagTimeline = document.getElementById(TAG_ID.TIMELINE);
 
@@ -129,55 +178,33 @@ class TimeTracker {
 
         this.observable.on(APP_EVENT.START_TIME_TRACKER, (activity) => {
             if (typeof this.tagLatestLine !== TYPE.UNDEFINED) {
-                if (this.tagLatestLine.getAttribute(ATTRIBUTE.NAME) !== activity.name) {
-                    this._stopTimeTracker(activity);;
+                if (this.tagLatestLine.getAttribute(ATTRIBUTE.ACTIVITY_NAME) !== activity.name) {
+                    this._stopTimeTracker();;
                 } else {
                     return;
                 }
             }
 
-            /*
-              <tr class="timeline-row">
-                <td><div class="timeline-row-activity-name">{activity.name}</div></td>
-                <td><div class="timeline-row-time">{timeStart}</div></td>
-              </tr>
-            */
+            const index = this.timelineStrage.getEntries().length;
             const date = new Date();
             date.setMilliseconds(0);
-            let tagRow = document.createElement(HTML_TAG_NAME.TR);
-            this.tagLatestLine = tagRow;
-            tagRow.setAttribute(ATTRIBUTE.NAME, activity.name);
-            tagRow.setAttribute(ATTRIBUTE.START, '' + date.getTime());
-
-            let tagRowName = document.createElement(HTML_TAG_NAME.TD);
-            tagRow.insertBefore(tagRowName, null);
-
-            let tagRowNameDiv = document.createElement(HTML_TAG_NAME.DIV);
-            tagRowNameDiv.classList.add(CLASS_NAME.ACTIVITY_NAME);
-            tagRowNameDiv.classList.add(CLASS_NAME.THIN);
-            tagRowNameDiv.innerText = activity.name;
-            tagRowName.insertBefore(tagRowNameDiv, null);
-
-            let tagRowStart = document.createElement(HTML_TAG_NAME.TD);
-            tagRow.insertBefore(tagRowStart, null);
-
-            let tagRowStartDiv = document.createElement(HTML_TAG_NAME.DIV);
-            tagRowStartDiv.className = CLASS_NAME.TIMELINE_ROW_TIME;
-            tagRowStartDiv.innerText = formatHHMMSS(date);
-            tagRowStart.insertBefore(tagRowStartDiv, null);
-
-            this.tagTimeline.insertBefore(tagRow, null);
-
+            const entry = new TimelineEntry(index, activity, date);
+            this.timelineStrage.addEntry(entry);
+            this.tagLatestLine = this._addTimelineEntryStart(entry);
             this._scroll();
         });
 
-        this.observable.on(APP_EVENT.STOP_TIME_TRACKER, (activity) => {
-            this._stopTimeTracker(activity);
+        this.observable.on(APP_EVENT.STOP_TIME_TRACKER, () => {
+            this._stopTimeTracker();
         });
 
         this.observable.on(HTML_EVENT.ON_RESIZE, () => this.setPaddingToTimeline());
         this.observable.on(APP_EVENT.ADD_ACTIVITY, () => this.setPaddingToTimeline());
         this.observable.on(APP_EVENT.REMOVE_ACTIVITY, () => this.setPaddingToTimeline());
+
+        this.observable.on(APP_EVENT.CLEAR_TIMELINE, () => this._clearTimeline());
+
+        this._restoreTimeline();
     }
 
     setPaddingToTimeline() {
@@ -187,7 +214,43 @@ class TimeTracker {
         tag.style.padding = `${tagHeader.clientHeight}px 2rem ${tagFooter.clientHeight}px 2rem`;
     }
 
-    _stopTimeTracker(activity) {
+    _addTimelineEntryStart(entry) {
+        /*
+          <tr class="timeline-row">
+            <td><div class="timeline-row-activity-name">{activity.name}</div></td>
+            <td><div class="timeline-row-time">{timeStart}</div></td>
+          </tr>
+        */
+
+        const tagRow = document.createElement(HTML_TAG_NAME.TR);
+        tagRow.setAttribute(ATTRIBUTE.INDEX, entry.index);
+        tagRow.setAttribute(ATTRIBUTE.ACTIVITY_ID, entry.activity.id);
+        tagRow.setAttribute(ATTRIBUTE.ACTIVITY_NAME, entry.activity.name);
+        tagRow.setAttribute(ATTRIBUTE.START, '' + entry.start.getTime());
+
+        const tagRowName = document.createElement(HTML_TAG_NAME.TD);
+        tagRow.insertBefore(tagRowName, null);
+
+        const tagRowNameDiv = document.createElement(HTML_TAG_NAME.DIV);
+        tagRowNameDiv.classList.add(CLASS_NAME.ACTIVITY_NAME);
+        tagRowNameDiv.classList.add(CLASS_NAME.THIN);
+        tagRowNameDiv.innerText = entry.activity.name;
+        tagRowName.insertBefore(tagRowNameDiv, null);
+
+        const tagRowStart = document.createElement(HTML_TAG_NAME.TD);
+        tagRow.insertBefore(tagRowStart, null);
+
+        const tagRowStartDiv = document.createElement(HTML_TAG_NAME.DIV);
+        tagRowStartDiv.className = CLASS_NAME.TIMELINE_ROW_TIME;
+        tagRowStartDiv.innerText = formatHHMMSS(entry.start);
+        tagRowStart.insertBefore(tagRowStartDiv, null);
+
+        this.tagTimeline.insertBefore(tagRow, null);
+
+        return tagRow;
+    }
+
+    _stopTimeTracker() {
         if (typeof this.tagLatestLine === TYPE.UNDEFINED) {
             return;
         }
@@ -196,8 +259,16 @@ class TimeTracker {
 
         const date = new Date();
         date.setMilliseconds(0);
+        const index = this.tagLatestLine.getAttribute(ATTRIBUTE.INDEX);
+        const entry = this.timelineStrage.getEntries()[index];
+        entry.end = date;
+        this.timelineStrage.updateTimelineEntry(index, entry);
+        this._addTimelineEntryStop(this.tagLatestLine, date);
+        this.tagLatestLine = undefined;
+    }
 
-        this.tagLatestLine.setAttribute(ATTRIBUTE.END, '' + date.getTime());
+    _addTimelineEntryStop(tag, date) {
+        tag.setAttribute(ATTRIBUTE.END, '' + date.getTime());
 
         /*
           <tr class="timeline-row">
@@ -207,7 +278,7 @@ class TimeTracker {
           </tr>
         */
         let tagRowEnd = document.createElement(HTML_TAG_NAME.TD);
-        this.tagLatestLine.insertBefore(tagRowEnd, null);
+        tag.insertBefore(tagRowEnd, null);
 
         let tagRowEndDiv = document.createElement(HTML_TAG_NAME.DIV);
         tagRowEndDiv.className = CLASS_NAME.TIMELINE_ROW_TIME;
@@ -224,7 +295,7 @@ class TimeTracker {
                 event.preventDefault();
                 this.observable.trigger(APP_EVENT.OPEN_EDIT_TIMELINE_DIALOG, tagRow);
             });
-        })(this.tagLatestLine);
+        })(tag);
         tagRowEdit.insertBefore(tagRowEditButton, null);
 
         let tagRowEditSymbol = document.createElement(HTML_TAG_NAME.DIV);
@@ -232,12 +303,33 @@ class TimeTracker {
         tagRowEditSymbol.innerHTML = TEXT.EDIT_SYMBOL;
         tagRowEditButton.insertBefore(tagRowEditSymbol, null);
 
-        this.tagLatestLine.insertBefore(tagRowEdit, null);
-        this.tagLatestLine = undefined;
+        tag.insertBefore(tagRowEdit, null);
     }
 
     _scroll() {
         window.scrollTo(0, document.body.clientHeight);
+    }
+
+    _restoreTimeline() {
+        let isStarting;
+        for (const entry of this.timelineStrage.getEntries()) {
+            this.tagLatestLine = this._addTimelineEntryStart(entry);
+            if (entry.end) {
+                this._addTimelineEntryStop(this.tagLatestLine, entry.end);
+                this.tagLatestLine = undefined;
+                this.observable.trigger(APP_EVENT.ENABLE_STATISTICS_BUTTON);
+            }
+            else {
+                this.observable.trigger(APP_EVENT.DISABLE_ACTIVITY_BUTTON, entry.activity);
+                this.observable.trigger(APP_EVENT.ENABLE_STOP_TIME_TRACKER_BUTTON);
+            }
+            this._scroll();;
+        }
+    }
+
+    _clearTimeline() {
+        this.tagTimeline.innerText = '';
+        this.timelineStrage.clear();
     }
 }
 
@@ -246,6 +338,7 @@ class EditTimelineDialog {
         this.tag = document.getElementById(TAG_ID.EDIT_TIMELINE_DIALOG);
         this.dialog = new Dialog(this.tag);
         this.observable = observable;
+        this.timelineStrage = new TimelineStrage();
         this.startYear = TYPE.UNDEFINED;
         this.startMonth = TYPE.UNDEFINED;
         this.startDate = TYPE.UNDEFINED;
@@ -287,38 +380,39 @@ class EditTimelineDialog {
         this.tagActivityName.addEventListener(HTML_EVENT.ON_KEYUP, this._getOnChangeActivityNameEventHandler());
 
         this.tagApply.addEventListener(HTML_EVENT.ON_CLICK, () => {
-            const timeline = this._getEditValues();
-            this._updateTimeline(timeline);
+            const entry = this._getEditValues();
+            this._updateTimeline(entry);
+            this.timelineStrage.updateTimelineEntry(entry.index, entry);
             this.dialog.close();
         });
 
         this.tagIncreaseStart.addEventListener(HTML_EVENT.ON_CLICK, (event) => {
-            let timeline = this._getEditValues();
-            timeline.start = new Date(((timeline.start.getTime() / 300000 | 0) + 1) * 300000);
-            this._setEditValues(timeline);
+            const entry = this._getEditValues();
+            entry.start = new Date(((entry.start.getTime() / 300000 | 0) + 1) * 300000);
+            this._setEditValues(entry);
         });
 
         this.tagDecreaseStart.addEventListener(HTML_EVENT.ON_CLICK, (event) => {
-            let timeline = this._getEditValues();
-            timeline.start = new Date((((timeline.start.getTime() + 299999) / 300000 | 0) - 1) * 300000);
-            this._setEditValues(timeline);
+            const entry = this._getEditValues();
+            entry.start = new Date((((entry.start.getTime() + 299999) / 300000 | 0) - 1) * 300000);
+            this._setEditValues(entry);
         });
 
         this.tagIncreaseEnd.addEventListener(HTML_EVENT.ON_CLICK, (event) => {
-            let timeline = this._getEditValues();
-            timeline.end = new Date(((timeline.end.getTime() / 300000 | 0) + 1) * 300000);
-            this._setEditValues(timeline);
+            const entry = this._getEditValues();
+            entry.end = new Date(((entry.end.getTime() / 300000 | 0) + 1) * 300000);
+            this._setEditValues(entry);
         });
 
         this.tagDecreaseEnd.addEventListener(HTML_EVENT.ON_CLICK, (event) => {
-            let timeline = this._getEditValues();
-            timeline.end = new Date((((timeline.end.getTime() + 299999) / 300000 | 0) - 1) * 300000);
-            this._setEditValues(timeline);
+            const entry = this._getEditValues();
+            entry.end = new Date((((entry.end.getTime() + 299999) / 300000 | 0) - 1) * 300000);
+            this._setEditValues(entry);
         });
     }
 
     _showDialog(tagRow) {
-        this.tagActivityName.value = tagRow.getAttribute(ATTRIBUTE.NAME);
+        this.tagActivityName.value = tagRow.getAttribute(ATTRIBUTE.ACTIVITY_NAME);
 
         const start = new Date(parseInt(tagRow.getAttribute(ATTRIBUTE.START)));
         const startHours = start.getHours();
@@ -370,31 +464,31 @@ class EditTimelineDialog {
             endMinutes,
             endSeconds);
 
-        return {
-            name: name,
-            start: start,
-            end: end,
-        };
+        const index = this.tagRow.getAttribute(ATTRIBUTE.INDEX);
+        const id = this.tagRow.getAttribute(ATTRIBUTE.ACTIVITY_ID);
+
+        return new TimelineEntry(index, { id, name }, start, end);
     }
 
-    _setEditValues(timeline) {
-        this.tagActivityName.value = timeline.name;
-        this.tagStartHours.selectedIndex = timeline.start.getHours();
-        this.tagStartMinutes.selectedIndex = timeline.start.getMinutes();
-        this.tagStartSeconds.selectedIndex = timeline.start.getSeconds();
-        this.tagEndHours.selectedIndex = timeline.end.getHours();
-        this.tagEndMinutes.selectedIndex = timeline.end.getMinutes();
-        this.tagEndSeconds.selectedIndex = timeline.end.getSeconds();
+    _setEditValues(entry) {
+        this.tagActivityName.value = entry.activity.name;
+        this.tagStartHours.selectedIndex = entry.start.getHours();
+        this.tagStartMinutes.selectedIndex = entry.start.getMinutes();
+        this.tagStartSeconds.selectedIndex = entry.start.getSeconds();
+        this.tagEndHours.selectedIndex = entry.end.getHours();
+        this.tagEndMinutes.selectedIndex = entry.end.getMinutes();
+        this.tagEndSeconds.selectedIndex = entry.end.getSeconds();
     }
 
-    _updateTimeline(timeline) {
-        this.tagRow.setAttribute(ATTRIBUTE.NAME, timeline.name);
-        this.tagRow.setAttribute(ATTRIBUTE.START, timeline.start.getTime());
-        this.tagRow.setAttribute(ATTRIBUTE.END, timeline.end.getTime());
+    _updateTimeline(entry) {
+        this.tagRow.setAttribute(ATTRIBUTE.ACTIVITY_ID, entry.activity.id);
+        this.tagRow.setAttribute(ATTRIBUTE.ACTIVITY_NAME, entry.activity.name);
+        this.tagRow.setAttribute(ATTRIBUTE.START, entry.start.getTime());
+        this.tagRow.setAttribute(ATTRIBUTE.END, entry.end.getTime());
 
-        this.tagRow.children[0].children[0].innerText = timeline.name;
-        this.tagRow.children[1].children[0].innerText = formatHHMMSS(timeline.start);
-        this.tagRow.children[2].children[0].innerText = formatHHMMSS(timeline.end);
+        this.tagRow.children[0].children[0].innerText = entry.activity.name;
+        this.tagRow.children[1].children[0].innerText = formatHHMMSS(entry.start);
+        this.tagRow.children[2].children[0].innerText = formatHHMMSS(entry.end);
     }
 
     _getOnChangeActivityNameEventHandler() {
@@ -430,9 +524,17 @@ class StopTimeTrackerButton {
             this.observable.trigger(APP_EVENT.STOP_TIME_TRACKER);
         });
 
+        this.observable.on(APP_EVENT.ENABLE_STOP_TIME_TRACKER_BUTTON, () => {
+            this.tag.removeAttribute(HTML_ATTRIBUTE.DISABLED);
+        });
+
         this.observable.on(APP_EVENT.START_TIME_TRACKER, () => {
             this.tag.removeAttribute(HTML_ATTRIBUTE.DISABLED);
         });
+
+        this.observable.on(APP_EVENT.CLEAR_TIMELINE, () => {
+            this.tag.setAttribute(HTML_ATTRIBUTE.DISABLED, HTML_ATTRIBUTE.DISABLED);
+        })
     }
 }
 
@@ -541,7 +643,7 @@ class OpenRemoveActivitiesDialogButton {
         this.observable.on(APP_EVENT.NO_ACTIVITIES, () => {
             this.tag.setAttribute(HTML_ATTRIBUTE.DISABLED, HTML_ATTRIBUTE_VALUE.DISABLED);
         });
-        
+
         this.observable.trigger(APP_EVENT.GET_ACTIVITIES, (activities) => {
             if (Object.keys(activities).length) {
                 this.tag.removeAttribute(HTML_ATTRIBUTE.DISABLED);
@@ -644,6 +746,10 @@ class OpenStatisticsButton {
         this.observable.on(APP_EVENT.ENABLE_STATISTICS_BUTTON, () => {
             this.tag.removeAttribute(HTML_ATTRIBUTE.DISABLED);
         });
+
+        this.observable.on(APP_EVENT.DISABLE_STATISTICS_BUTTON, () => {
+            this.tag.setAttribute(HTML_ATTRIBUTE.DISABLED, HTML_ATTRIBUTE.DISABLED);
+        })
     }
 }
 
@@ -665,7 +771,7 @@ class StatisticsDialog {
 
         const tags = document.getElementById(TAG_ID.TIMELINE).children;
         for (let tag of tags) {
-            const name = tag.getAttribute(ATTRIBUTE.NAME);
+            const name = tag.getAttribute(ATTRIBUTE.ACTIVITY_NAME);
             if (typeof statistics[name] === TYPE.UNDEFINED) {
                 statistics[name] = 0;
             }
@@ -723,8 +829,24 @@ class StatisticsDialog {
     }
 }
 
+class ClearButton {
+    constructor(observable) {
+        this.observable = observable;
+        this.tag = document.getElementById(TAG_ID.CLEAR);
+
+        this.tag.addEventListener(HTML_EVENT.ON_CLICK, () => {
+            this.observable.trigger(APP_EVENT.STOP_TIME_TRACKER);
+            this.observable.trigger(APP_EVENT.CLEAR_TIMELINE);
+            this.observable.trigger(APP_EVENT.DISABLE_STATISTICS_BUTTON);
+        })
+    }
+}
+
 (function () {
     const observable = new Observable();
+    const stopTimeTrackerButton = new StopTimeTrackerButton(observable);
+    const openStatisticsButton = new OpenStatisticsButton(observable);
+    const statisticsDialog = new StatisticsDialog(observable);
     const activityContainer = new ActivityContainer(observable);
     const timeTracker = new TimeTracker(observable);
     const addActivityButton = new AddActivityButton(observable);
@@ -732,12 +854,5 @@ class StatisticsDialog {
     const openRemoveActivitiesDialogButton = new OpenRemoveActivitiesDialogButton(observable);
     const removeActivityDialog = new RemoveActivitiesDialog(observable);
     const editTimelineDialog = new EditTimelineDialog(observable);
-    const stopTimeTrackerButton = new StopTimeTrackerButton(observable);
-    const openStatisticsButton = new OpenStatisticsButton(observable);
-    const statisticsDialog = new StatisticsDialog(observable);
-    
-    window.addEventListener(HTML_EVENT.ON_BEFORE_UNLOAD, (e) => {
-        e.preventDefault();
-        e.returnValue = '-';
-    });
+    const clearButton = new ClearButton(observable);
 })();

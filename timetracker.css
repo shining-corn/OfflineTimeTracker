@@ -298,3 +298,7 @@ select {
     background: var(--bgcolor);
     overflow: auto;
 }
+
+.right {
+    float: right;
+}
