@@ -107,6 +107,7 @@ export const CLASS_NAME = enumeration({
 
 export const TEXT = enumeration({
     EDIT_SYMBOL: '&#x270F;',
+    CONFIRM_CLEAR_TIMELINE: 'Are you sure you want to clear the timeline?',
 });
 
 export const ATTRIBUTE = enumeration({

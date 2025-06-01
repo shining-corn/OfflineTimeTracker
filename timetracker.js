@@ -48,7 +48,7 @@ class ActivityContainer {
             this._saveActivities();
         });
 
-        this.observable.on(APP_EVENT.STOP_TIME_TRACKER, (activity) => {
+        this.observable.on(APP_EVENT.STOP_TIME_TRACKER, () => {
             this._enableAllActivityButton();
         });
 
@@ -835,10 +835,12 @@ class ClearButton {
         this.tag = document.getElementById(TAG_ID.CLEAR);
 
         this.tag.addEventListener(HTML_EVENT.ON_CLICK, () => {
-            this.observable.trigger(APP_EVENT.STOP_TIME_TRACKER);
-            this.observable.trigger(APP_EVENT.CLEAR_TIMELINE);
-            this.observable.trigger(APP_EVENT.DISABLE_STATISTICS_BUTTON);
-        })
+            if (window.confirm(TEXT.CONFIRM_CLEAR_TIMELINE)) {
+                this.observable.trigger(APP_EVENT.STOP_TIME_TRACKER);
+                this.observable.trigger(APP_EVENT.CLEAR_TIMELINE);
+                this.observable.trigger(APP_EVENT.DISABLE_STATISTICS_BUTTON);
+            }
+        });
     }
 }
 
